@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}
+用户登录
+{% endblock %}
+
+{% block handerjs %}
+<script type="text/javascript" src="/static/md5-min.js"></script>
+{% endblock %}
+
+
+{% block main %}
+
+     <div class="login-body">
+        <div class="login-card">
+            <div class="login-top">
+                <h3>新用户登录</h3>
+                <h5>尊敬的用户，欢迎您回来！</h5>
+            </div>
+            <div class="login-bottom">
+               <form method="post" onsubmit="return login();">
+                   {% csrf_token %}
+                   <input type="hidden" name="time" id="time">
+                    <div class="login-input-box">
+
+                    <input type="text" id="account" name="account" value="" class="login-admin active" placeholder="邮箱登录">
+                    <span style="color:red;" id="aSpan"></span>
+
+                    <input type="password" id="password" name="password" value="" class="login-password">
+                    <span style="color:red;" id="pSpan"></span>
+                    <input type="text" style="height:36px;width: 100px; margin-top: 8px" id="code" onblur="checkCode(this.value)" placeholder="验证码"><img src="/user/loadCode/" onclick="changeCode(this)"><span style="color:red;" id="cSpan"></span>
+                    <input type="hidden" name="redirect" value="{{ red }}">
+                    <input type="hidden" name="cartitems" value="{{ cartitems }}">
+
+                    <button type="submit" class="login-btn" style="color: white;text-decoration: none;cursor: pointer">登录</button>
+                </div>
+               </form>
+                <div class="login-img">
+                    <img src="/static/login_05.png" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block footerjs %}
+
+ <script>
+        function isEmail(str){
+            var reg = /^[a-zA-Z0-9_-]{6,}@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+            return reg.test(str);
+        }
+
+
+//  onsubmit 表示提交的
+        function login(){
+
+            //获取输入框的值
+            var account = $('#account').val();
+            var password = $('#password').val();
+            var flag = true
+            //简单校验
+            if(account.length<6||!isEmail(account)){
+                $('#aSpan').text('邮箱长度不能小于六位');
+                flag = false;
+            }
+
+            if(password.length<6){
+                $('#pSpan').text('密码长度不能小于六位');
+                flag = false;
+            }
+
+            var code = $('#code').val();
+            var cflag = checkCode(code);
+            if(!cflag){
+                flag = false
+            }
+
+
+
+            if(flag){
+
+                {#var hex_pwd = hex_md5(password);#}
+                {##}
+                {#//var hex_pwd = hex_md5(password+time)#}
+                {##}
+                {#$('#password').val(hex_pwd);#}
+
+
+            }else{
+                return false;
+            }
+
+
+
+
+
+        }
+
+
+        //切换验证码
+        function changeCode(obj){
+            $(obj).attr('src','/user/loadCode/?r='+new Date().getTime())
+        }
+
+
+        function checkCode(txt){
+            // 失去焦点的时候触发此函数, txt 表示this.value即输入框输入的内容.
+            var flag = false;// 定义返回值,默认为false 输入相同为true 不同为true
+            $.ajax({
+                url:'/user/checkcode/',
+                type:'GET',
+                data:{'code':txt},  // 传递用户输入的验证码
+                async:false,      // 改为同步 ,ajax默认为异步
+                success:function(result){ // result 拿到jsonresponse对象
+                    var cflag = result.flag;
+                         if(cflag){  // 判断jsonresponse返回对象是否是
+                            flag = true;
+                        $('#cSpan').html('√');  // 在验证码下边显示一个✔
+                    }else{
+                        $('#cSpan').html('×');
+                    }
+                }
+            })
+
+            return flag;
+
+        }
+
+    </script>
+
+{% endblock %}
